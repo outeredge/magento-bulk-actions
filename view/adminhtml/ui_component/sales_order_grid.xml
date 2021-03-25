@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <listingToolbar name="listing_top">
+        <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
+            <action name="set_order_to_in_production">
+                <settings>
+                    <url path="adminhtml/order/setOrderToInProduction"/>
+                    <type>set_order_to_in_production</type>
+                    <label translate="true">Set to In Production</label>
+                </settings>
+            </action>
+            <action name="send_shipment_email_and_complete_order">
+                <settings>
+                    <url path="adminhtml/order/massSendEmailAndComplete"/>
+                    <type>send_shipment_email_and_complete_order</type>
+                    <label translate="true">Send email &amp; complete order</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+</listing>
