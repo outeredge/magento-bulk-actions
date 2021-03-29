@@ -2,18 +2,18 @@
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <listingToolbar name="listing_top">
         <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
-            <action name="set_order_to_in_production">
+            <action name="ship_and_notify" class="OuterEdge\BulkActions\Ui\Component\Action\AddParams">
                 <settings>
-                    <url path="adminhtml/order/setOrderToInProduction"/>
-                    <type>set_order_to_in_production</type>
-                    <label translate="true">Set to In Production</label>
+                    <url path="shipbulkactions/order/massordership"/>
+                    <type>ship_and_notify</type>
+                    <label translate="true">Ship (notify customer)</label>
                 </settings>
             </action>
-            <action name="send_shipment_email_and_complete_order">
+            <action name="ship_and_dont_notify">
                 <settings>
-                    <url path="adminhtml/order/massSendEmailAndComplete"/>
-                    <type>send_shipment_email_and_complete_order</type>
-                    <label translate="true">Send email &amp; complete order</label>
+                    <url path="shipbulkactions/order/massordership"/>
+                    <type>ship_and_dont_notify</type>
+                    <label translate="true">Ship (don't notify customer)</label>
                 </settings>
             </action>
         </massaction>
