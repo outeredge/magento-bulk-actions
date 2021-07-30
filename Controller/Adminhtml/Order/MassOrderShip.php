@@ -88,6 +88,7 @@ class MassOrderShip extends \Magento\Backend\App\Action
 
                     try {
                         // Save created shipment and order
+                        $shipment->getExtensionAttributes()->setSourceCode('default');
                         $shipment->save();
                         $shipment->getOrder()->save();
 
