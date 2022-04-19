@@ -3,8 +3,8 @@
 namespace OuterEdge\BulkActions\Controller\Adminhtml\Order;
 
 use Magento\Backend\App\Action\Context;
-use Magento\Sales\Model\Order as ModelOrder;
-use Magento\Sales\Model\Convert\Order as ConvertOrder;
+use Magento\Sales\Model\OrderFactory as ModelOrder;
+use Magento\Sales\Model\Convert\OrderFactory as ConvertOrder;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Shipping\Model\ShipmentNotifier;
 
@@ -64,10 +64,10 @@ class MassOrderShip extends \Magento\Backend\App\Action
             // Ship Order
             foreach ($ordersId as $orderId) {
 
-                $order = $this->orderModel->loadByAttribute('entity_id', $orderId);
+                $order = $this->orderModel->create()->load($orderId);
                 if ($order->canShip()) {
 
-                    $convertOrder = $this->convertOrder;
+                    $convertOrder = $this->convertOrder->create();
                     $shipment = $convertOrder->toShipment($order);
 
                     foreach ($order->getAllItems() AS $orderItem) {
