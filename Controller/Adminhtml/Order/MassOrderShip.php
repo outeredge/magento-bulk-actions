@@ -5,8 +5,10 @@ namespace OuterEdge\BulkActions\Controller\Adminhtml\Order;
 use Magento\Backend\App\Action\Context;
 use Magento\Sales\Model\OrderFactory as ModelOrder;
 use Magento\Sales\Model\Convert\OrderFactory as ConvertOrder;
+use Magento\Sales\Model\Convert\Order;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Shipping\Model\ShipmentNotifier;
+use Magento\Framework\DB\TransactionFactory;
 
 class MassOrderShip extends \Magento\Backend\App\Action
 {
@@ -16,7 +18,7 @@ class MassOrderShip extends \Magento\Backend\App\Action
     protected $orderModel;
 
     /**
-     * @var ConvertOrder
+     * @var Order
      */
     protected $convertOrder;
 
@@ -31,19 +33,26 @@ class MassOrderShip extends \Magento\Backend\App\Action
     protected $shipmentNotifier;
 
     /**
+     * @var \Magento\Framework\DB\TransactionFactory
+     */
+    protected $transactionFactory;
+
+    /**
      * Preparation constructor.
      * @param Context $context
      * @param ManagerInterface $messageManager
      * @param ModelOrder $orderModel
      * @param ConvertOrder $convertOrder
      * @param ShipmentNotifier $shipmentNotifier
+     * @param TransactionFactory $transactionFactory
      */
     public function __construct(
         Context $context,
         ManagerInterface $messageManager,
         ModelOrder $orderModel,
         ConvertOrder $convertOrder,
-        ShipmentNotifier $shipmentNotifier
+        ShipmentNotifier $shipmentNotifier,
+        TransactionFactory $transactionFactory
     ) {
         parent::__construct($context);
 
@@ -51,11 +60,15 @@ class MassOrderShip extends \Magento\Backend\App\Action
         $this->orderModel = $orderModel;
         $this->convertOrder = $convertOrder;
         $this->shipmentNotifier = $shipmentNotifier;
+        $this->transactionFactory = $transactionFactory;
     }
 
     public function execute()
     {
+        /* @var $saveTransaction \Magento\Framework\DB\Transaction */
+        $saveTransaction = $this->transactionFactory->create();
         $resultRedirect = $this->resultRedirectFactory->create();
+        $shipmentArray = [];
 
         $ordersId = $this->getRequest()->getParam('selected');
         $notify = $this->getRequest()->getParam('notify');
@@ -66,7 +79,6 @@ class MassOrderShip extends \Magento\Backend\App\Action
 
                 $order = $this->orderModel->create()->load($orderId);
                 if ($order->canShip()) {
-
                     $convertOrder = $this->convertOrder->create();
                     $shipment = $convertOrder->toShipment($order);
 
@@ -86,25 +98,32 @@ class MassOrderShip extends \Magento\Backend\App\Action
                     $shipment->register();
                     $shipment->getOrder()->setIsInProcess(true);
 
-                    try {
-                        // Save created shipment and order
-                        $shipment->getExtensionAttributes()->setSourceCode('default');
-                        $shipment->save();
-                        $shipment->getOrder()->save();
-
-                        // Send email
-                        if ($notify) {
-                            $this->shipmentNotifier->notify($shipment);
-                            $shipment->save();
-                        }
-                        $this->messageManager->addSuccess(__("Shipment Succesfully Generated for order: #".$order->getIncrementId()));
-                    } catch (\Exception $e) {
-                        $this->messageManager->addError(__('Cannot ship order'. $e->getMessage()));
-                    }
+                    //Add shipment to transaction
+                    $saveTransaction->addObject($shipment);
+                    $saveTransaction->addObject($shipment->getOrder());
+                    $shipmentArray[$order->getIncrementId()] = $shipment;
 
                 } else {
-                    $this->messageManager->addError(__("Cannot ship order, becuase It's already created or something went wrong"));
+                    $this->messageManager->addError(__("Cannot ship order".$order->getIncrementId().". It's already created or something went wrong"));
                 }
+            }
+
+            try {
+                // Save created shipment
+                $saveTransaction->save();
+
+                // Send email
+                if ($notify) {
+                    foreach ($shipmentArray as $shipment) {
+                        $this->shipmentNotifier->notify($shipment);
+                    }
+                }
+                if (!empty($shipmentArray)) {
+                    $ordersIncrementIds = implode(",", array_keys($shipmentArray));
+                    $this->messageManager->addSuccess(__("Shipment Succesfully Generated for orders: ".$ordersIncrementIds));
+                }
+            } catch (\Exception $e) {
+                $this->messageManager->addError(__('Cannot ship order'. $e->getMessage()));
             }
         }
         return $resultRedirect->setPath('sales/order/index', [], ['error' => true]);
