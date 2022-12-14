@@ -108,22 +108,22 @@ class MassOrderShip extends \Magento\Backend\App\Action
                 }
             }
 
-            try {
-                // Save created shipment
-                $saveTransaction->save();
+            if (!empty($shipmentArray)) {
+                try {
+                    // Save created shipment
+                    $saveTransaction->save();
 
-                // Send email
-                if ($notify) {
-                    foreach ($shipmentArray as $shipment) {
-                        $this->shipmentNotifier->notify($shipment);
+                    // Send email
+                    if ($notify) {
+                        foreach ($shipmentArray as $shipment) {
+                            $this->shipmentNotifier->notify($shipment);
+                        }
                     }
-                }
-                if (!empty($shipmentArray)) {
                     $ordersIncrementIds = implode(",", array_keys($shipmentArray));
                     $this->messageManager->addSuccess(__("Shipment Succesfully Generated for orders: ".$ordersIncrementIds));
+                } catch (\Exception $e) {
+                    $this->messageManager->addError(__('Cannot ship order'. $e->getMessage()));
                 }
-            } catch (\Exception $e) {
-                $this->messageManager->addError(__('Cannot ship order'. $e->getMessage()));
             }
         }
         return $resultRedirect->setPath('sales/order/index', [], ['error' => true]);
