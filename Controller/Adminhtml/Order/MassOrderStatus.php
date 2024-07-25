@@ -11,7 +11,6 @@ class MassOrderStatus extends \Magento\Backend\App\Action
 {
     public function __construct(
         Context $context,
-        protected ManagerInterface $messageManager,
         protected OrderRepositoryInterface $orderRepository,
         protected LoggerInterface $logger
     ) {
@@ -21,6 +20,7 @@ class MassOrderStatus extends \Magento\Backend\App\Action
     public function execute()
     {
         $resultRedirect = $this->resultRedirectFactory->create();
+        $ordersId = $this->getRequest()->getParam('selected');
 
         if (!empty($ordersId)) {
             foreach ($ordersId as $orderId) {
