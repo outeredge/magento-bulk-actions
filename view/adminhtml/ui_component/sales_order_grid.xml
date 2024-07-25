@@ -16,6 +16,13 @@
                     <label translate="true">Ship (don't notify customer)</label>
                 </settings>
             </action>
+            <action name="change_status_to_complete">
+                <settings>
+                    <url path="shipbulkactions/order/massorderstatus"/>
+                    <type>change_status_to_complete</type>
+                    <label translate="true">Change Status to Complete</label>
+                </settings>
+            </action>
         </massaction>
         <paging name="listing_paging"/>
     </listingToolbar>
