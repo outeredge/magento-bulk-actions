@@ -20,7 +20,7 @@
                 <settings>
                     <url path="shipbulkactions/order/massorderstatus"/>
                     <type>change_status_to_complete</type>
-                    <label translate="true">Change Status to Complete</label>
+                    <label translate="true">Force Status to Complete</label>
                 </settings>
             </action>
         </massaction>
