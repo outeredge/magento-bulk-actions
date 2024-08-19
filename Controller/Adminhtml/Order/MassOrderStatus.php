@@ -34,13 +34,14 @@ class MassOrderStatus extends \Magento\Backend\App\Action
                     $connection->fetchRow(
                         "UPDATE $tableSalesOrderGrid SET`status` = '".Order::STATE_COMPLETE."' WHERE `entity_id` = $orderId");
 
+                    $this->messageManager->addSuccessMessage(__("Status was been changed. Order Id: ".$orderId));
                 } catch (\Exception $e) {
                     $this->logger->error($e);
                     $this->messageManager->addExceptionMessage($e, $e->getMessage());
                 }
             }
         }
-        
-        return $resultRedirect->setPath('sales/order/index', [], ['error' => true]);
+
+        return $resultRedirect->setPath('sales/order/index');
     }
 }

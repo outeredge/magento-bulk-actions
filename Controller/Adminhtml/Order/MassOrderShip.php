@@ -126,6 +126,6 @@ class MassOrderShip extends \Magento\Backend\App\Action
                 }
             }
         }
-        return $resultRedirect->setPath('sales/order/index', [], ['error' => true]);
+        return $resultRedirect->setPath('sales/order/index');
     }
 }
